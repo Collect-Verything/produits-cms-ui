@@ -6,10 +6,10 @@ ARG NGINX_VERSION=alpine3.21
 FROM node:${NODE_VERSION} AS builder
 WORKDIR /app
 COPY package.json package-lock.json ./
-ARG REACT_APP_PRIMARY="#e88f89"
-ARG REACT_APP_SECONDARY="#89e8a1"
-ARG REACT_APP_TITRE_SITE="MNS"
-ARG REACT_APP_USER="Jeanjean@gmail.com"
+ARG REACT_APP_PRIMARY="PLACEHOLDER_COLOR_PRIMARY"
+ARG REACT_APP_SECONDARY="PLACEHOLDER_COLOR_SECONDARY"
+ARG REACT_APP_TITRE_SITE="PLACEHOLDER_TITRE_SITE"
+ARG REACT_APP_USER="PLACEHOLDER_USER@GMAIL.COM"
 RUN --mount=type=cache,target=/root/.npm npm ci
 COPY . .
 RUN npm run build
@@ -22,6 +22,6 @@ FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS runner
 USER nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY --chown=nginx:nginx  --from=builder /app/build /usr/share/nginx/html
-EXPOSE 8000
+EXPOSE 80
 ENTRYPOINT ["nginx", "-c", "/etc/nginx/nginx.conf"]
 CMD ["-g", "daemon off;"]
