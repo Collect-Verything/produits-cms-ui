@@ -58,4 +58,4 @@ docker run -p 8080:8080 client-cms
 
 ---
 
-Veux-tu que je te rajoute aussi une **section .env** dans ce README (avec un exemple de contenu) pour que ce soit encore plus clair ?
+

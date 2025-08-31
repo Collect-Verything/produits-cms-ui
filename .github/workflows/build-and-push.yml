@@ -1,84 +1,145 @@
-name: Build & Push (and optional Deploy)
+#name: Build & Push (and optional Deploy)
+#
+#on:
+#  workflow_dispatch:
+#    inputs:
+#      namespace: { required: true }
+#      name:      { required: true }
+#      tag:       { required: true, default: "latest" }
+#      react_app_primary:   { required: true }
+#      react_app_secondary: { required: true }
+#      react_app_titre_site:{ required: true }
+#      react_app_user:      { required: true }
+#      deploy: { required: false, default: "false" }
+#
+#jobs:
+#  build-push:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - uses: docker/setup-qemu-action@v3
+#      - uses: docker/setup-buildx-action@v3
+#
+#      - name: Docker login
+#        uses: docker/login-action@v3
+#        with:
+#          username: ${{ secrets.DOCKERHUB_USERNAME }}
+#          password: ${{ secrets.DOCKERHUB_TOKEN }}
+#
+#      # (facultatif) Ensure repo
+#      - name: Ensure Docker Hub repo
+#        env:
+#          USER: ${{ secrets.DOCKERHUB_USERNAME }}
+#          PAT:  ${{ secrets.DOCKERHUB_TOKEN }}
+#          NAMESPACE: ${{ github.event.inputs.namespace }}
+#          NAME: ${{ github.event.inputs.name }}
+#        run: |
+#          set -e
+#          TOKEN=$(curl -s -X POST https://hub.docker.com/v2/users/login/ \
+#            -H 'Content-Type: application/json' \
+#            -d "{\"username\":\"$USER\",\"password\":\"$PAT\"}" | jq -r .token)
+#          curl -sf -H "Authorization: JWT $TOKEN" \
+#            "https://hub.docker.com/v2/repositories/$NAMESPACE/$NAME/" || \
+#          curl -sf -X POST -H "Authorization: JWT $TOKEN" \
+#            -H 'Content-Type: application/json' \
+#            -d "{\"namespace\":\"$NAMESPACE\",\"name\":\"$NAME\",\"is_private\":false,\"description\":\"Auto-created\"}" \
+#            https://hub.docker.com/v2/repositories/
+#
+#      - name: Build & Push multi-arch
+#        uses: docker/build-push-action@v6
+#        with:
+#          context: .
+#          file: ./Dockerfile
+#          platforms: linux/amd64,linux/arm64
+#          push: true
+#          tags: |
+#            ${{ github.event.inputs.namespace }}/${{ github.event.inputs.name }}:${{ github.event.inputs.tag }}
+#            ${{ github.event.inputs.namespace }}/${{ github.event.inputs.name }}:latest
+#          build-args: |
+#            REACT_APP_PRIMARY=${{ github.event.inputs.react_app_primary }}
+#            REACT_APP_SECONDARY=${{ github.event.inputs.react_app_secondary }}
+#            REACT_APP_TITRE_SITE=${{ github.event.inputs.react_app_titre_site }}
+#            REACT_APP_USER=${{ github.event.inputs.react_app_user }}
+#
+#  deploy:
+#    needs: build-push
+#    if: ${{ github.event.inputs.deploy == 'true' }}
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: SSH deploy
+#        uses: appleboy/ssh-action@v1.2.0
+#        with:
+#          host:     ${{ secrets.SERVER_HOST }}
+#          username: ${{ secrets.SERVER_USER }}
+#          password: ${{ secrets.SERVER_PASS }}
+#          script: |
+#            set -e
+#            IMAGE="${{ github.event.inputs.namespace }}/${{ github.event.inputs.name }}:${{ github.event.inputs.tag }}"
+#            NAME="${{ github.event.inputs.name }}"
+#            docker pull "$IMAGE"
+#            docker rm -f "$NAME" || true
+#            docker run -d --name "$NAME" --restart unless-stopped -p 8000:8080 "$IMAGE"
+#
+#
+
+
+name: Deploy Client CMS
 
 on:
-  workflow_dispatch:
-    inputs:
-      namespace: { required: true }
-      name:      { required: true }
-      tag:       { required: true, default: "latest" }
-      react_app_primary:   { required: true }
-      react_app_secondary: { required: true }
-      react_app_titre_site:{ required: true }
-      react_app_user:      { required: true }
-      deploy: { required: false, default: "false" }
+  repository_dispatch:
+    types: [deploy-site]
 
 jobs:
-  build-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      SERVER_IP: ${{ secrets.SERVER_IP }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      SERVER_PASS: ${{ secrets.SERVER_PASS }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-
-      - name: Docker login
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # (facultatif) Ensure repo
-      - name: Ensure Docker Hub repo
-        env:
-          USER: ${{ secrets.DOCKERHUB_USERNAME }}
-          PAT:  ${{ secrets.DOCKERHUB_TOKEN }}
-          NAMESPACE: ${{ github.event.inputs.namespace }}
-          NAME: ${{ github.event.inputs.name }}
+      - name: Build Docker image
         run: |
-          set -e
-          TOKEN=$(curl -s -X POST https://hub.docker.com/v2/users/login/ \
-            -H 'Content-Type: application/json' \
-            -d "{\"username\":\"$USER\",\"password\":\"$PAT\"}" | jq -r .token)
-          curl -sf -H "Authorization: JWT $TOKEN" \
-            "https://hub.docker.com/v2/repositories/$NAMESPACE/$NAME/" || \
-          curl -sf -X POST -H "Authorization: JWT $TOKEN" \
-            -H 'Content-Type: application/json' \
-            -d "{\"namespace\":\"$NAMESPACE\",\"name\":\"$NAME\",\"is_private\":false,\"description\":\"Auto-created\"}" \
-            https://hub.docker.com/v2/repositories/
+          docker build \
+            --build-arg REACT_APP_PRIMARY="${{ github.event.client_payload.primary }}" \
+            --build-arg REACT_APP_SECONDARY="${{ github.event.client_payload.secondary }}" \
+            --build-arg REACT_APP_TITRE_SITE="${{ github.event.client_payload.titreSite }}" \
+            --build-arg REACT_APP_USER="${{ github.event.client_payload.user }}" \
+            -t $DOCKERHUB_USERNAME/client-cms-${{ github.event.client_payload.user }} .
 
-      - name: Build & Push multi-arch
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ${{ github.event.inputs.namespace }}/${{ github.event.inputs.name }}:${{ github.event.inputs.tag }}
-            ${{ github.event.inputs.namespace }}/${{ github.event.inputs.name }}:latest
-          build-args: |
-            REACT_APP_PRIMARY=${{ github.event.inputs.react_app_primary }}
-            REACT_APP_SECONDARY=${{ github.event.inputs.react_app_secondary }}
-            REACT_APP_TITRE_SITE=${{ github.event.inputs.react_app_titre_site }}
-            REACT_APP_USER=${{ github.event.inputs.react_app_user }}
+      - name: Log in to Docker Hub
+        run: echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
 
-  deploy:
-    needs: build-push
-    if: ${{ github.event.inputs.deploy == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: SSH deploy
-        uses: appleboy/ssh-action@v1.2.0
+      - name: Push Docker image
+        run: docker push $DOCKERHUB_USERNAME/client-cms-${{ github.event.client_payload.user }}
+
+      - name: Prepare server (install docker if needed)
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          host:     ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASS }}
+          host: ${{ env.SERVER_IP }}
+          username: ${{ env.SERVER_USER }}
+          password: ${{ env.SERVER_PASS }}
           script: |
-            set -e
-            IMAGE="${{ github.event.inputs.namespace }}/${{ github.event.inputs.name }}:${{ github.event.inputs.tag }}"
-            NAME="${{ github.event.inputs.name }}"
-            docker pull "$IMAGE"
-            docker rm -f "$NAME" || true
-            docker run -d --name "$NAME" --restart unless-stopped -p 8000:8080 "$IMAGE"
+            sudo apt update -y && sudo apt upgrade -y
+            if ! command -v docker &> /dev/null
+            then
+              curl -fsSL https://get.docker.com | sh
+            fi
 
-
+      - name: Run container on server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ env.SERVER_IP }}
+          username: ${{ env.SERVER_USER }}
+          password: ${{ env.SERVER_PASS }}
+          script: |
+            docker stop client-cms-${{ github.event.client_payload.user }} || true
+            docker rm client-cms-${{ github.event.client_payload.user }} || true
+            docker run -d -p 8080:8080 --name client-cms-${{ github.event.client_payload.user }} $DOCKERHUB_USERNAME/client-cms-${{ github.event.client_payload.user }}
