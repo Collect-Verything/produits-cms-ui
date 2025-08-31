@@ -142,4 +142,4 @@ jobs:
           script: |
             docker stop client-cms-${{ github.event.client_payload.user }} || true
             docker rm client-cms-${{ github.event.client_payload.user }} || true
-            docker run -d -p 8080:8080 --name client-cms-${{ github.event.client_payload.user }} ${{ env.DOCKERHUB_USERNAME }}/client-cms-${{ github.event.client_payload.user }}
+            docker run -d -p 80:8080 --name client-cms-${{ github.event.client_payload.user }} ${{ env.DOCKERHUB_USERNAME }}/client-cms-${{ github.event.client_payload.user }}
