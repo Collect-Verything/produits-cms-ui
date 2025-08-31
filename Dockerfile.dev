@@ -1,0 +1,17 @@
+# ===========================
+# Dev: React avec hot reload
+# ===========================
+ARG NODE_VERSION=22.14.0-alpine
+FROM node:${NODE_VERSION}
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci
+
+COPY . .
+
+ENV HOST=0.0.0.0
+EXPOSE 3000
+
+CMD ["npm", "start"]

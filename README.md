@@ -23,12 +23,26 @@ Construire l’image Docker avec les variables d’environnement injectées au b
 
 ```bash
 docker build \
-  --build-arg REACT_APP_PRIMARY=https://api.monsite.com \
+  --build-arg REACT_APP_PRIMARY="#f542c2" \
   --build-arg REACT_APP_SECONDARY="#fcba03" \
   --build-arg REACT_APP_TITRE_SITE=titretest \
   --build-arg REACT_APP_USER=usertest \
   -t client-cms .
 ```
+
+---
+
+### ▶️ Dev
+
+Lancer l’image pour dev
+
+```bash
+docker compose up client-dev
+```
+
+👉 L’application sera disponible sur [http://localhost:3000](http://localhost:3000).
+
+---
 
 ---
 
