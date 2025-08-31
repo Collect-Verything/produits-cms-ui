@@ -136,7 +136,7 @@ jobs:
       - name: Run container on server
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ env.SERVER_IP }}
+          host: ${{ env.SERVER_HOST }}
           username: ${{ env.SERVER_USER }}
           password: ${{ env.SERVER_PASS }}
           script: |
