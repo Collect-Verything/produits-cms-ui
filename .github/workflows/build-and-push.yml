@@ -145,6 +145,6 @@ jobs:
           username: ${{ env.SERVER_USER }}
           password: ${{ env.SERVER_PASS }}
           script: |
-            docker stop client-cms-$SAFE_TITRE_SITE || true
-            docker rm client-cms-$SAFE_TITRE_SITE || true
-            docker run -d -p 80:8080 --name client-cms-$SAFE_TITRE_SITE ${{ env.DOCKERHUB_USERNAME }}/client-cms-$SAFE_TITRE_SITE
+            docker stop client-cms-${{ env.SAFE_TITRE_SITE }} || true
+            docker rm client-cms-${{ env.SAFE_TITRE_SITE }} || true
+            docker run -d -p 80:8080 --name client-cms-${{ env.SAFE_TITRE_SITE }} ${{ env.DOCKERHUB_USERNAME }}/client-cms-${{ env.SAFE_TITRE_SITE }}
