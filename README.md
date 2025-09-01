@@ -45,7 +45,7 @@ docker compose up client-dev
 * L’application tourne sur **[http://localhost:3000](http://localhost:3000)**.
 * Les fichiers locaux sont montés dans le conteneur → toute modification est reflétée instantanément.
 
-👉 Voir la documentation : [2. Mode Développement](./documentation/2-mode-developpement.md)
+👉 Voir la documentation : [2. Mode Développement](./documentation/2.3.%20Commandes%20pour%20lancer%20en%20dev%20(hot%20reload).md)
 
 ---
 
@@ -70,7 +70,7 @@ docker run -p 8080:8080 client-cms
 
 👉 Disponible sur **[http://localhost:8080](http://localhost:8080)**.
 
-👉 Voir la documentation : [3. Mode Production](./documentation/3-mode-production.md)
+👉 Voir la documentation : [3. Mode Production](./documentation/3.1.%20Dockerfile%20(multi-stage%20build%20avec%20Nginx).md)
 
 ---
 
@@ -90,8 +90,8 @@ Le déploiement est automatisé grâce à un **workflow déclenché par API** (`
 
 👉 Voir la documentation :
 
-* [5. GitHub Actions & CI/CD](./documentation/5-github-actions.md)
-* [7. Déclencher un Workflow par API](./documentation/7-dispatch-api.md)
+* [5. GitHub Actions & CI/CD](./documentation/5.%20GitHub%20Actions%20&%20CI-CD.md)
+* [7. Déclencher un Workflow par API](./documentation/7.%20Déclencher%20un%20Workflow%20par%20API.md)
 
 ---
 
@@ -104,7 +104,7 @@ Le déploiement est automatisé grâce à un **workflow déclenché par API** (`
     * `Contents: Read and write`
 * Ajout du token en secret dans GitHub Actions.
 
-👉 Voir la documentation : [6. Bearer Token GitHub](./documentation/6-pat-github.md)
+👉 Voir la documentation : [6. Bearer Token GitHub](./documentation/6.%20Bearer%20Token%20(PAT)%20GitHub.md)
 
 ---
 
@@ -120,7 +120,7 @@ docker run -d -p 80:8080 client-cms-usertest
 
 👉 Accessible sur **http\://\<IP\_SERVEUR>**.
 
-👉 Voir la documentation : [8. Déploiement VPS](./documentation/8-deploiement-vps.md)
+👉 Voir la documentation : [8. Déploiement VPS](./documentation/8.%20Déploiement%20sur%20VPS%20(Ionos).md)
 
 ---
 
