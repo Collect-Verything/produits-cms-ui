@@ -105,6 +105,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Sanitize user for Docker tag
+        run: |
+          SAFE_USER=$(echo "${{ github.event.client_payload.user }}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9._-' '-')
+          echo "SAFE_USER=$SAFE_USER" >> $GITHUB_ENV
+
       - name: Build Docker image
         run: |
           docker build \
@@ -112,7 +117,7 @@ jobs:
             --build-arg REACT_APP_SECONDARY="${{ github.event.client_payload.secondary }}" \
             --build-arg REACT_APP_TITRE_SITE="${{ github.event.client_payload.titreSite }}" \
             --build-arg REACT_APP_USER="${{ github.event.client_payload.user }}" \
-            -t $DOCKERHUB_USERNAME/client-cms-${{ github.event.client_payload.user }} .
+            -t $DOCKERHUB_USERNAME/client-cms-$SAFE_USER .
 
       - name: Log in to Docker Hub
         run: echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
