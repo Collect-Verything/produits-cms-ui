@@ -104,11 +104,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-#
-#      - name: Sanitize user for Docker tag
-#        run: |
-#          SAFE_TITRE_SITE=$(echo "${{ github.event.client_payload.titreSite }}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9._-' '-')
-#          echo "SAFE_TITRE_SITE=$SAFE_TITRE_SITE" >> $GITHUB_ENV
+
+      - name: Sanitize user for Docker tag
+        run: |
+          SAFE_TITRE_SITE=$(echo "${{ github.event.client_payload.titreSite }}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9._-' '-')
+          echo "SAFE_TITRE_SITE=$SAFE_TITRE_SITE" >> $GITHUB_ENV
 
       - name: Build Docker image
         run: |
@@ -117,13 +117,13 @@ jobs:
             --build-arg REACT_APP_SECONDARY="${{ github.event.client_payload.secondary }}" \
             --build-arg REACT_APP_TITRE_SITE="${{ github.event.client_payload.titreSite }}" \
             --build-arg REACT_APP_USER="${{ github.event.client_payload.user }}" \
-            -t $DOCKERHUB_USERNAME/client-cms-${{ github.event.client_payload.titreSite }} .
+            -t $DOCKERHUB_USERNAME/client-cms-$SAFE_TITRE_SITE .
 
       - name: Log in to Docker Hub
         run: echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
 
       - name: Push Docker image
-        run: docker push $DOCKERHUB_USERNAME/client-cms-${{ github.event.client_payload.titreSite }}
+        run: docker push $DOCKERHUB_USERNAME/client-cms-$SAFE_TITRE_SITE
 
       - name: Prepare server (install docker if needed)
         uses: appleboy/ssh-action@v1.0.0
@@ -145,6 +145,6 @@ jobs:
           username: ${{ env.SERVER_USER }}
           password: ${{ env.SERVER_PASS }}
           script: |
-            docker stop client-cms-${{ github.event.client_payload.titreSite }} || true
-            docker rm client-cms-${{ github.event.client_payload.titreSite }} || true
-            docker run -d -p 80:8080 --name client-cms-${{ github.event.client_payload.titreSite }} ${{ env.DOCKERHUB_USERNAME }}/client-cms-${{ github.event.client_payload.titreSite }}
+            docker stop client-cms-$SAFE_TITRE_SITE || true
+            docker rm client-cms-$SAFE_TITRE_SITE || true
+            docker run -d -p 80:8080 --name client-cms-$SAFE_TITRE_SITE ${{ env.DOCKERHUB_USERNAME }}/client-cms-$SAFE_TITRE_SITE
