@@ -67,9 +67,7 @@ jobs:
           host: ${{ env.SERVER_HOST }}
           username: ${{ env.SERVER_USER }}
           password: ${{ env.SERVER_PASS }}
-          source: |
-            docker-compose.yml
-            fluent-bit.conf
+          source: deploy/*
           target: /home/${{ env.SERVER_USER }}/app/
 
       - name: Deploy with docker-compose
