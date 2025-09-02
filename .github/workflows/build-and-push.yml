@@ -78,7 +78,7 @@ jobs:
           password: ${{ env.SERVER_PASS }}
           script: |
             set -e
-            cd /home/${{ env.SERVER_USER }}/app
+            cd /home/${{ env.SERVER_USER }}/app/deploy
 
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
             echo "SAFE_TITRE_SITE=${SAFE_TITRE_SITE}" >> .env
