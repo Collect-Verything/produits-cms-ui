@@ -19,6 +19,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Debug repo files
+        run: ls -R
+
       - name: Sanitize titreSite for Docker tag
         run: |
           SAFE_TITRE_SITE=$(echo "${{ github.event.client_payload.titreSite }}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ +/-/g')
