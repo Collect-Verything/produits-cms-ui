@@ -29,7 +29,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build \
+          docker build --no-cache \
             --build-arg REACT_APP_PRIMARY="${{ github.event.client_payload.primary }}" \
             --build-arg REACT_APP_SECONDARY="${{ github.event.client_payload.secondary }}" \
             --build-arg REACT_APP_TITRE_SITE="${{ github.event.client_payload.titreSite }}" \
