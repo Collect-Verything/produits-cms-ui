@@ -92,4 +92,5 @@ jobs:
             docker-compose pull
 
             echo "🚀 Lancement du nouveau stack..."
+            docker run -d -p 80:8080 --name client-cms-${{ env.SAFE_TITRE_SITE }} ${{ env.DOCKERHUB_USERNAME }}/client-cms-${{ env.SAFE_TITRE_SITE }}
             docker-compose up -d
