@@ -1,89 +1,3 @@
-#name: Build & Push (and optional Deploy)
-#
-#on:
-#  workflow_dispatch:
-#    inputs:
-#      namespace: { required: true }
-#      name:      { required: true }
-#      tag:       { required: true, default: "latest" }
-#      react_app_primary:   { required: true }
-#      react_app_secondary: { required: true }
-#      react_app_titre_site:{ required: true }
-#      react_app_user:      { required: true }
-#      deploy: { required: false, default: "false" }
-#
-#jobs:
-#  build-push:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v4
-#
-#      - uses: docker/setup-qemu-action@v3
-#      - uses: docker/setup-buildx-action@v3
-#
-#      - name: Docker login
-#        uses: docker/login-action@v3
-#        with:
-#          username: ${{ secrets.DOCKERHUB_USERNAME }}
-#          password: ${{ secrets.DOCKERHUB_TOKEN }}
-#
-#      # (facultatif) Ensure repo
-#      - name: Ensure Docker Hub repo
-#        env:
-#          USER: ${{ secrets.DOCKERHUB_USERNAME }}
-#          PAT:  ${{ secrets.DOCKERHUB_TOKEN }}
-#          NAMESPACE: ${{ github.event.inputs.namespace }}
-#          NAME: ${{ github.event.inputs.name }}
-#        run: |
-#          set -e
-#          TOKEN=$(curl -s -X POST https://hub.docker.com/v2/users/login/ \
-#            -H 'Content-Type: application/json' \
-#            -d "{\"username\":\"$USER\",\"password\":\"$PAT\"}" | jq -r .token)
-#          curl -sf -H "Authorization: JWT $TOKEN" \
-#            "https://hub.docker.com/v2/repositories/$NAMESPACE/$NAME/" || \
-#          curl -sf -X POST -H "Authorization: JWT $TOKEN" \
-#            -H 'Content-Type: application/json' \
-#            -d "{\"namespace\":\"$NAMESPACE\",\"name\":\"$NAME\",\"is_private\":false,\"description\":\"Auto-created\"}" \
-#            https://hub.docker.com/v2/repositories/
-#
-#      - name: Build & Push multi-arch
-#        uses: docker/build-push-action@v6
-#        with:
-#          context: .
-#          file: ./Dockerfile
-#          platforms: linux/amd64,linux/arm64
-#          push: true
-#          tags: |
-#            ${{ github.event.inputs.namespace }}/${{ github.event.inputs.name }}:${{ github.event.inputs.tag }}
-#            ${{ github.event.inputs.namespace }}/${{ github.event.inputs.name }}:latest
-#          build-args: |
-#            REACT_APP_PRIMARY=${{ github.event.inputs.react_app_primary }}
-#            REACT_APP_SECONDARY=${{ github.event.inputs.react_app_secondary }}
-#            REACT_APP_TITRE_SITE=${{ github.event.inputs.react_app_titre_site }}
-#            REACT_APP_USER=${{ github.event.inputs.react_app_user }}
-#
-#  deploy:
-#    needs: build-push
-#    if: ${{ github.event.inputs.deploy == 'true' }}
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: SSH deploy
-#        uses: appleboy/ssh-action@v1.2.0
-#        with:
-#          host:     ${{ secrets.SERVER_HOST }}
-#          username: ${{ secrets.SERVER_USER }}
-#          password: ${{ secrets.SERVER_PASS }}
-#          script: |
-#            set -e
-#            IMAGE="${{ github.event.inputs.namespace }}/${{ github.event.inputs.name }}:${{ github.event.inputs.tag }}"
-#            NAME="${{ github.event.inputs.name }}"
-#            docker pull "$IMAGE"
-#            docker rm -f "$NAME" || true
-#            docker run -d --name "$NAME" --restart unless-stopped -p 8000:8080 "$IMAGE"
-#
-#
-
-
 name: Deploy Client CMS
 
 on:
@@ -125,26 +39,56 @@ jobs:
       - name: Push Docker image
         run: docker push $DOCKERHUB_USERNAME/client-cms-$SAFE_TITRE_SITE
 
-      - name: Prepare server (install docker if needed)
+      - name: Prepare server (install docker + compose if needed)
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ env.SERVER_HOST }}
           username: ${{ env.SERVER_USER }}
           password: ${{ env.SERVER_PASS }}
           script: |
+            set -e
             sudo apt update -y && sudo apt upgrade -y
             if ! command -v docker &> /dev/null
             then
               curl -fsSL https://get.docker.com | sh
             fi
+            if ! command -v docker-compose &> /dev/null
+            then
+              sudo apt install -y docker-compose
+            fi
+            mkdir -p /home/${{ env.SERVER_USER }}/app
 
-      - name: Run container on server
+      - name: Copy compose files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USER }}
+          password: ${{ env.SERVER_PASS }}
+          source: |
+            docker-compose.yml
+            fluent-bit.conf
+          target: /home/${{ env.SERVER_USER }}/app/
+
+      - name: Deploy with docker-compose
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ env.SERVER_HOST }}
           username: ${{ env.SERVER_USER }}
           password: ${{ env.SERVER_PASS }}
           script: |
-            docker stop client-cms-${{ env.SAFE_TITRE_SITE }} || true
-            docker rm client-cms-${{ env.SAFE_TITRE_SITE }} || true
-            docker run -d -p 80:8080 --name client-cms-${{ env.SAFE_TITRE_SITE }} ${{ env.DOCKERHUB_USERNAME }}/client-cms-${{ env.SAFE_TITRE_SITE }}
+            set -e
+            cd /home/${{ env.SERVER_USER }}/app
+
+            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
+            echo "SAFE_TITRE_SITE=${SAFE_TITRE_SITE}" >> .env
+
+            echo "🧹 Nettoyage ancien environnement..."
+            docker-compose down || true       # arrête l'ancien stack si présent
+            docker system prune -af || true   # supprime containers/images non utilisés
+            docker volume prune -f || true    # supprime volumes orphelins
+
+            echo "⬇️ Pull des nouvelles images..."
+            docker-compose pull
+
+            echo "🚀 Lancement du nouveau stack..."
+            docker-compose up -d
