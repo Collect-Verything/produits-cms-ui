@@ -93,8 +93,8 @@ jobs:
             echo "⬇️ Pull des nouvelles images..."
             docker-compose pull
 
-            echo "🚀 Lancement du client..."
-            docker run -d -p 80:8080 --name client-cms-${{ env.SAFE_TITRE_SITE }} ${{ env.DOCKERHUB_USERNAME }}/client-cms-${{ env.SAFE_TITRE_SITE }}
+#            echo "🚀 Lancement du client..."
+#            docker run -d -p 80:8080 --name client-cms-${{ env.SAFE_TITRE_SITE }} ${{ env.DOCKERHUB_USERNAME }}/client-cms-${{ env.SAFE_TITRE_SITE }}
             
             echo "🚀 Lancement du monitoring..."
             docker-compose up -d
