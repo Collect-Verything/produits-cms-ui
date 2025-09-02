@@ -84,7 +84,7 @@ jobs:
             echo "SAFE_TITRE_SITE=${{ env.SAFE_TITRE_SITE }}" >> .env
       
             echo "🧹 Nettoyage complet Docker..."
-            docker stop $(docker ps -aq) || true
+            docker stop $(docker ps -a -q) || true
             docker rm -f $(docker ps -aq) || true
             docker system prune -af || true
             docker volume prune -f || true
