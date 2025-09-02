@@ -82,15 +82,19 @@ jobs:
 
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
             echo "SAFE_TITRE_SITE=${{ env.SAFE_TITRE_SITE }}" >> .env
-
-            echo "🧹 Nettoyage ancien environnement..."
-            docker-compose down || true       # arrête l'ancien stack si présent
-            docker system prune -af || true   # supprime containers/images non utilisés
-            docker volume prune -f || true    # supprime volumes orphelins
+      
+            echo "🧹 Nettoyage complet Docker..."
+            docker stop $(docker ps -aq) || true
+            docker rm -f $(docker ps -aq) || true
+            docker system prune -af || true
+            docker volume prune -f || true
+            docker network prune -f || true
 
             echo "⬇️ Pull des nouvelles images..."
             docker-compose pull
 
-            echo "🚀 Lancement du nouveau stack..."
+            echo "🚀 Lancement du client..."
             docker run -d -p 80:8080 --name client-cms-${{ env.SAFE_TITRE_SITE }} ${{ env.DOCKERHUB_USERNAME }}/client-cms-${{ env.SAFE_TITRE_SITE }}
+            
+            echo "🚀 Lancement du monitoring..."
             docker-compose up -d
