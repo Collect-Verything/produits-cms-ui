@@ -17,6 +17,8 @@ services:
     volumes:
       - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
       - ./logs/nginx:/var/log/nginx
+    ports:
+      - "2020:2020"
     networks:
       - monitoring
 
