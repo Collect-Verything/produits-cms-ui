@@ -32,10 +32,8 @@ RUN npm run build
 # Stage 2: Prepare Nginx to Serve Static Files
 # =========================================
 
-FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS runner
-USER nginx
+FROM nginx:alpine AS runner
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY --chown=nginx:nginx  --from=builder /app/build /usr/share/nginx/html
-EXPOSE 8080
-ENTRYPOINT ["nginx", "-g", "daemon off;", "-c", "/etc/nginx/nginx.conf", "-e", "/dev/stderr"]
-CMD ["-g", "daemon off;"]
+COPY --from=builder /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
