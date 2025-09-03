@@ -17,6 +17,7 @@ services:
       - ./parsers.conf:/fluent-bit/etc/parsers.conf
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
+      - /var/log:/var/log:ro
     ports:
       - "2020:2020"
     networks:
