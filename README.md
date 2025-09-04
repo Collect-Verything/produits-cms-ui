@@ -70,7 +70,8 @@ docker run -p 8080:8080 client-cms
 
 👉 Disponible sur **[http://localhost:8080](http://localhost:8080)**.
 
-👉 Voir la documentation : [3. Mode Production](./documentation/3.1.%20Dockerfile%20(multi-stage%20build%20avec%20Nginx).md)
+[//]: # (Modifier lien et mettre doc réel du projet pas tuto basic cice)
+👉 Voir la documentation : [3. Mode Production](./documentation/3.1.%20Dockerfile%20(multi-stage%20build%20avec%20Nginx).md) 
 
 ---
 
@@ -91,6 +92,8 @@ Le déploiement est automatisé grâce à un **workflow déclenché par API** (`
 👉 Voir la documentation :
 
 * [5. GitHub Actions & CI/CD](./documentation/5.%20GitHub%20Actions%20&%20CI-CD.md)
+
+[//]: # (Verifier que doc correspond bien à explication base ci cd)
 * [7. Déclencher un Workflow par API](./documentation/7.%20Déclencher%20un%20Workflow%20par%20API.md)
 
 ---
@@ -104,6 +107,7 @@ Le déploiement est automatisé grâce à un **workflow déclenché par API** (`
     * `Contents: Read and write`
 * Ajout du token en secret dans GitHub Actions.
 
+[//]: # (Normalement ok)
 👉 Voir la documentation : [6. Bearer Token GitHub](./documentation/6.%20Bearer%20Token%20(PAT)%20GitHub.md)
 
 ---
@@ -120,6 +124,7 @@ docker run -d -p 80:8080 client-cms-usertest
 
 👉 Accessible sur **http\://\<IP\_SERVEUR>**.
 
+[//]: # (Rediriger vers doc a jour du project pas tuto ci cd basic)
 👉 Voir la documentation : [8. Déploiement VPS](./documentation/8.%20Déploiement%20sur%20VPS%20(Ionos).md)
 
 ---
@@ -128,6 +133,7 @@ docker run -d -p 80:8080 client-cms-usertest
 
 Toutes les notes détaillées sont disponibles dans le dossier [`/documentation`](./documentation).
 
+[//]: # (Faire des topic tuto base et explication appli reel)
 * [Sommaire](./documentation/1.0%20Sommaire.md)
 
 ---
@@ -135,6 +141,8 @@ Toutes les notes détaillées sont disponibles dans le dossier [`/documentation`
 ## ✨ Conclusion
 
 Ce projet propose une **chaîne complète** de :
+
+[//]: # (Mettre a jour cette chaine avec fonctionnalité reel , pas tuto base cicd)
 
 * Développement isolé avec Docker Compose,
 * Build optimisé avec Docker multi-stage + Nginx,
